@@ -1,0 +1,61 @@
+<?php
+function reZero_menu() {
+
+  $items = array();
+
+  $items['user/usergamelist'] = array( //this creates a URL that will call this form at "examples/form-example"
+    'title' => 'User List', //page title
+    'description' => 'User games list',
+    'page callback' => 'drupal_get_form', //this is the function that will be called when the page is accessed.  for a form, use drupal_get_form
+    'page arguments' => array('reZero_list'), //put the name of the form here
+    'access callback' => TRUE
+  );
+
+  return $items;
+}
+
+
+
+function reZero_list($form, &$form_state) {
+
+  try{
+      $pdo = new PDO("mysql:host=localhost;dbname=drupaldb", "root", "");
+      // Set the PDO error mode to exception
+      $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+  } catch(PDOException $e){
+      die("ERROR: Could not connect. " . $e->getMessage());
+  }
+
+  // Attempt select query execution
+  try{
+      $sql = "SELECT node.title FROM drupaldb.flagging, drupaldb.node where drupaldb.flagging.entity_id = drupaldb.node.nid && (drupaldb.node.type = 'videogames') && (drupaldb.flagging.uid = " . $_GET['userid'] . ") ";
+      $result = $pdo->query($sql);
+      if($result->rowCount() > 0){
+          echo "<table>";
+              echo "<tr>";
+                  echo "<th>name</th>";
+
+              echo "</tr>";
+          while($row = $result->fetch()){
+              echo "<tr>";
+                  echo "<td>" . $row['title'] . "</td>";
+          }
+          echo "</table>";
+          // Free result set
+          unset($result);
+      } else{
+          echo "No records matching your query were found.";
+      }
+  } catch(PDOException $e){
+      die("ERROR: Could not able to execute $sql. " . $e->getMessage());
+  }
+
+  // Close connection
+  unset($pdo);
+}
+
+function reZero_form_validate($form, &$form_state) {
+}
+
+function reZero_form_submit($form, &$form_state) {
+}
